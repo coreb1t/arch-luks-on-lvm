@@ -76,7 +76,7 @@ if echo "$answer" | grep -iq "^y" ;then
 		# setup wifi
 		ping -q -w 1 -c 1 archlinux.org > /dev/null && info_white "internet connection: ok" || warning "internet connection: not connected"; wifi-menu
 
-		info_ok "updating system clock"
+		info_ok "updating system clock ... "
 		timedatectl set-ntp true
 		ok
 
@@ -101,7 +101,7 @@ if echo "$answer" | grep -iq "^y" ;then
 
 
 
-		info_white "Formating $boot_partition ..."
+		info_white "Formating $boot_partition ... "
 		# dd if=/dev/zero of=/dev/sda1 bs=1M status=progress
 		# mkfs.ext4 /dev/sda1
 		# mkdir /mnt/boot
@@ -110,11 +110,11 @@ if echo "$answer" | grep -iq "^y" ;then
 		mkfs.ext4 $boot_partition
 		mkdir /mnt/boot
 		mount $boot_partition /mnt/boot
-		info_ok "Formating $boot_partition ..."; ok
+		info_ok "Formating $boot_partition ... "; ok
 
 
 
-		info_white "Preparing LVM ..."
+		info_white "Preparing LVM ... "
 		# https://wiki.archlinux.org/index.php/Dm-crypt/Encrypting_an_entire_system#LVM_on_LUKS
 
 
@@ -139,10 +139,10 @@ if echo "$answer" | grep -iq "^y" ;then
 		lvcreate -L ${root_size}G -n lvroot MyVol
 		lvcreate -L ${swap_size}G -n swap MyVol
 		lvcreate -l 100%FREE -n home MyVol
-		info_ok "Preparing LVM ..."; ok
+		info_ok "Preparing LVM ... "; ok
 
 
-		info_white "Configuring LUKS ..."
+		info_white "Configuring LUKS ... "
 		# cryptsetup luksFormat -c aes-xts-plain64 -s 512 /dev/mapper/MyVol-lvroot
 		# cryptsetup open /dev/mapper/MyVol-lvroot root
 		# mkfs.ext4 /dev/mapper/root
@@ -173,10 +173,10 @@ if echo "$answer" | grep -iq "^y" ;then
 		mkfs.ext4 /dev/mapper/home
 		mkdir /mnt/home
 		mount /dev/mapper/home /mnt/home
-		info_ok "Configuring LUKS ..."; ok
+		info_ok "Configuring LUKS ... "; ok
 	
 
-		info_ok "Configuring fstab and crypttab ..."
+		info_ok "Configuring fstab and crypttab ... "
 		fstab="/mnt/etc/fstab"
 		touch $fstab
 		echo '/dev/mapper/root        /       ext4            defaults        0       1' >> $fstab
@@ -191,15 +191,15 @@ if echo "$answer" | grep -iq "^y" ;then
 		ok
 
 
-		info_ok "Refreshing mirrorlist ..."
+		info_white "Refreshing mirrorlist ... "
 		echo "you can cancel the process if it takes to long. 6 fastest mirrors will be writted to /etc/pacman.d/mirrorlist"
 		cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
 		rankmirrors -n 6 /etc/pacman.d/mirrorlist.backup > /etc/pacman.d/mirrorlist
-		ok
+		info_ok "Refreshing mirrorlist ... "; ok
 
-		info_white "Installing the base packages ..."
+		info_white "Installing the base packages ... "
 		pacstrap /mnt base
-		info_ok "Installing the base packages ..."; ok
+		info_ok "Installing the base packages ... "; ok
 		
 
 
@@ -233,19 +233,19 @@ if echo "$answer" | grep -iq "^y" ;then
 		echo $hostname > /etc/hostname
 
 		echo "127.0.1.1	$hostname.localdomain	$hostname"  >> /etc/hosts
-
+		info_ok "Setup time zone, locale, vconsole, hostname ... "; ok
 
 		# add keyboard keymap lvm2 encrypt HOOKS to mkinitcpio.conf 
 		sed -i "s/HOOKS=.*/HOOKS=\"base udev autodetect keyboard keymap modconf block lvm2 encrypt filesystems fsck\"/g" /etc/mkinitcpio.conf
 		info_white "Creating initramfs ..."
 		mkinitcpio -p linux
-		info_ok "Creating initramfs ..."; ok
+		info_ok "Creating initramfs ... "; ok
 
 
-		info_white "Installing additional software ..."
+		info_white "Installing additional software ... "
 		pacman -S $add_packages
 
-		info_white "Configuring the boot loader (LUKS) ..."
+		info_white "Configuring the boot loader (LUKS) ... "
 		# GRUB_CMDLINE_LINUX="cryptdevice=/dev/sdb2:lvmpool root=/dev/mapper/lvmpool-root"
 		# GRUB_CMDLINE_LINUX="cryptdevice=/dev/sdb2:MyVol root=/dev/mapper/MyVol-lvroot"
 		# GRUB_CMDLINE_LINUX="cryptdevice=/dev/sda2:main root=/dev/mapper/main-root"
@@ -257,17 +257,21 @@ if echo "$answer" | grep -iq "^y" ;then
 
 		grub-mkconfig -o /boot/grub/grub.cfg
 		grub-install --target=i386-pc $dev
-		info_ok "Configuring the boot loader (LUKS) ..."; ok
+		info_ok "Configuring the boot loader (LUKS) ... "; ok
 
 
-		info_white "Changing root password ..."
+		info_white "Changing root password ... "
 		passwd
-		info_ok "Changing root password ..."; ok
+		info_ok "Changing root password ... "; ok
 
-		info_white "Adding user $user ..."
+		info_ok "Adding user $user ... "
 		useradd -m -G wheel -s /bin/zsh $user
-		info_ok "Adding user $user ..."; ok
+		ok
 
+		info_white "Changing $user password ... "
+		passwd $user
+		info_ok "Changing $user password ... "; ok
+		
 
 		info_green "Please finish the following steps"
 		info_white "\t 1) Remove install scripts : rm $0"
