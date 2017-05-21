@@ -13,7 +13,7 @@ lvm_partition="/dev/sda2"
 root_size=65 # GB
 swap_size=12 # GB
 hostname=myhost
-add_packages="grub sudo vim bash-completion zsh wget"
+add_packages="grub sudo vim bash-completion zsh wget git"
 user="newuser"
 
 # --- colors ---
