@@ -226,7 +226,10 @@ if echo "$answer" | grep -iq "^y" ;then
 		hwclock --systohc
 
 		# setup locale
+		sed -i "s/#en_US ISO-8859-1/en_US ISO-8859-1/g" /etc/locale.gen
+		sed -i "s/#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/g" /etc/locale.gen
 		sed -i "s/#de_DE.UTF-8 UTF-8/de_DE.UTF-8 UTF-8/g" /etc/locale.gen
+		sed -i "s/#de_DE@euro ISO-8859-15/de_DE@euro ISO-8859-15/g" /etc/locale.gen
 		locale-gen
 
 		echo "KEYMAP=de-latin1" > /etc/vconsole.conf
