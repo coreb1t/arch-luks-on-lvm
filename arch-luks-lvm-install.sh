@@ -3,20 +3,20 @@
 # Arch Linux installation script with full drive automatic partitioning full luks on LVM encryption 
 # 
 # Author: coreb1t
-# Version: 0.1
+# Version: 0.2
 
 
-# --- configuration ---
+# ===== configuration =====
 dev="/dev/sda"
 boot_partition="/dev/sda1"
 lvm_partition="/dev/sda2"
 root_size=65 # GB
 swap_size=12 # GB
 hostname=myhost
-add_packages="grub sudo vim bash-completion zsh wget git"
+add_packages="grub sudo vim bash-completion zsh wget git dhclient net-tools"
 user="newuser"
 
-# --- colors ---
+# ====== colors ========
 WHITE_BOLD="\e[1m\e[37m"
 GREEN="\e[32m"
 GREEN_BOLD="\e[1m\e[32m"
@@ -51,43 +51,75 @@ function warning(){
 
 
 # --- installation --- 
+warning "\nPlease edit the configuration before continue !!!"
+		info_green "\n===== Configuration ====="
+
+		info_white "user:     \t$user"
+		info_white "hostname: \t$hostname\n"
+		info_white "device:   \t$dev"
+		info_white "boot:     \t$boot_partition"
+		info_white "lvm:      \t$lvm_partition LUKS encrypted"
+		info_white "          \t* root ($root_size GB)"
+		info_white "          \t* swap ($swap_size GB)"
+		info_white "          \t* home (100%FREE)\n"
+
+info_white "\tPress any key to continue"
+read keyboard  
 
 info_green "\nDid you setup the keyboard layout?"
-info_white "command: loadkeys de-latin1" 
-info_white "\nPress any key to continue"
+info_white "(command: loadkeys de-latin1)" 
+info_white "\n\tPress any key to continue"
 read keyboard  
 
 
 info_green "Do you want to start with Arch Linux installation (y/n)? "
-info_white "\n\t Installation steps:"
-info_white "\t 1) Live USB Environment"
-info_white "\t 2) Chrooted Environment"
 
 read answer
 if echo "$answer" | grep -iq "^y" ;then
 
-   	info_green "Step 1 (Live USB Environment) (y/n)? "
+	info_white "\n\t Installation steps:"
+	info_white "\t 1) Live USB Environment"
+	info_white "\t 2) Chrooted Environment\n"
+
+   	info_green "Please enter the step number (1|2): "
+
 	read answer1
-	if echo "$answer1" | grep -iq "^y" ;then
+	if echo "$answer1" | grep -iq "^1" ;then
+
+		info_green "===== Step 1 (Live USB Environment) =====\n"
 
 		######################### BEGIN - in LIVE ARCH LINUX CONFIGURATION ######################################
 
 
 		# setup wifi
-		ping -q -w 1 -c 1 archlinux.org > /dev/null && info_white "internet connection: ok" || warning "internet connection: not connected"; wifi-menu
+		# ping -q -w 1 -c 1 archlinux.org > /dev/null && info_white "internet connection: ok" || warning "internet connection: not connected"; wifi-menu
 
-		info_ok "updating system clock ... "
+		info_white "[+] Checking internet connection ... "
+		info_white "(if required use wifi-menu command to setup Wi-Fi)\n"
+		info_white "\tCurrent IP: "
+		ifconfig | grep 255.255 # show current ip
+
+		info_white "\n\tPress any key to continue" 
+		read input
+
+		info_ok "[+] Updating system clock ... "
 		timedatectl set-ntp true
 		ok
 
-		info_white "please create 2 partitions on the harddrive $dev" 
+		info_white "\nPlease create 2 partitions on the harddrive $dev" 
 		# cfdisk /dev/sda
+		info_green "\t boot partition [type 83] ($boot_partition) at least 1024MB (set as bootable)" 
+		info_green "\t lvm  partition [type 8e] ($lvm_partition) use 100% from free space (set type as linux LVM) \n"
+		
+		info_white "\tPress any key to continue" 
+		read input
+
 		cfdisk $dev
 
 		# print partitioning info
 		sda1_size=$(fdisk -l /dev/sda | grep $boot_partition | awk -F ' ' '{print $6}') # because of bootable flag
 		sda2_size=$(fdisk -l /dev/sda | grep $lvm_partition | awk -F ' ' '{print $5}')
-		warning "\nPlease edit the configuration before continue !!!"
+		warning "\nPlease edit the configuration before continue (ir required) !!!"
 		info_green "\n--- configuration ---"
 		info_white "device: \t$dev"
 		info_white "boot:   \t$boot_partition ($sda1_size)"
@@ -96,25 +128,32 @@ if echo "$answer" | grep -iq "^y" ;then
 		info_white "        \t* swap ($swap_size GB)"
 		info_white "        \t* home (100%FREE)\n"
 		
-		info_white "\nPress any key to continue"	
+		info_white "\n\tPress any key to continue"	
 		read config  
 
 
+		info_white "[+] Unmouting partitions ... "
+		umount /mnt/boot
+		umount /mnt
+		umount /mnt/home
+		rm -rf /mnt
+		mkdir /mnt
+		info_ok "[+] Unmouting partitions ... "; ok
 
-		info_white "Formating $boot_partition ... "
+		info_white "[+] Formating $boot_partition ... "
 		# dd if=/dev/zero of=/dev/sda1 bs=1M status=progress
 		# mkfs.ext4 /dev/sda1
 		# mkdir /mnt/boot
 		# mount /dev/sda1 /mnt/boot
-		dd if=/dev/zero of=$boot_partition bs=1M status=progress
+		dd if=/dev/zero of=$boot_partition bs=1M status=progress 2>/dev/null
 		mkfs.ext4 $boot_partition
 		mkdir /mnt/boot
 		mount $boot_partition /mnt/boot
-		info_ok "Formating $boot_partition ... "; ok
+		info_ok "[+] Formating $boot_partition ... "; ok
 
 
 
-		info_white "Preparing LVM ... "
+		info_white "[+] Preparing LVM ... "
 		# https://wiki.archlinux.org/index.php/Dm-crypt/Encrypting_an_entire_system#LVM_on_LUKS
 
 
@@ -139,10 +178,10 @@ if echo "$answer" | grep -iq "^y" ;then
 		lvcreate -L ${root_size}G -n lvroot MyVol
 		lvcreate -L ${swap_size}G -n swap MyVol
 		lvcreate -l 100%FREE -n home MyVol
-		info_ok "Preparing LVM ... "; ok
+		info_ok "[+] Preparing LVM ... "; ok
 
 
-		info_white "Configuring LUKS ... "
+		info_white "[+] Configuring LUKS ... "
 		# cryptsetup luksFormat -c aes-xts-plain64 -s 512 /dev/mapper/MyVol-lvroot
 		# cryptsetup open /dev/mapper/MyVol-lvroot root
 		# mkfs.ext4 /dev/mapper/root
@@ -153,6 +192,13 @@ if echo "$answer" | grep -iq "^y" ;then
 		cryptsetup open /dev/mapper/MyVol-lvroot root
 		mkfs.ext4 /dev/mapper/root
 		mount /dev/mapper/root /mnt
+
+		mount | grep -w '/dev/mapper/root' 
+		if [[ $? != 0 ]]; then
+			warning "\n[-] Crypted volume (lvm-root) not created, try again"
+			warning "[-] Installation canceled"
+			exit
+		fi
 
 		mkdir /mnt/etc
 		
@@ -173,10 +219,18 @@ if echo "$answer" | grep -iq "^y" ;then
 		mkfs.ext4 /dev/mapper/home
 		mkdir /mnt/home
 		mount /dev/mapper/home /mnt/home
-		info_ok "Configuring LUKS ... "; ok
+
+		mount | grep -w '/dev/mapper/home' 
+		if [[ $? != 0 ]]; then
+			warning "\n[-] Crypted volume (lvm-home) not created, try again"
+			warning "[-] Installation canceled"
+			exit
+		fi
+
+		info_ok "[+] Configuring LUKS ... "; ok
 	
 
-		info_ok "Configuring fstab and crypttab ... "
+		info_ok "[+] Configuring fstab and crypttab ... "
 		fstab="/mnt/etc/fstab"
 		touch $fstab
 		echo '/dev/mapper/root        /       ext4            defaults        0       1' >> $fstab
@@ -186,27 +240,27 @@ if echo "$answer" | grep -iq "^y" ;then
 
 		crypttab="/mnt/etc/crypttab"
 		cp /etc/crypttab $crypttab
-		echo 'swap	/dev/mapper/MyVol-swap	/dev/urandom	swap,cipher=aes-xts-plain64,size=256' >> $crypttab
+		echo 'swap	/dev/mapper/MyVol-swap   /dev/urandom	swap,cipher=aes-xts-plain64,size=256' >> $crypttab
 		echo 'home	/dev/mapper/MyVol-home   /etc/luks-keys/home' >> $crypttab
 		ok
 
 
-		info_white "Refreshing mirrorlist ... "
-		echo "you can cancel the process if it takes to long. 6 fastest mirrors will be writted to /etc/pacman.d/mirrorlist"
+		info_white "[+] Refreshing mirrorlist ... "
+		echo "you can cancel the process if it takes to long. 6 fastest mirrors will be writted to /etc/pacman.d/mirrorlist (ctrl + C)"
 		cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
 		rankmirrors -n 6 /etc/pacman.d/mirrorlist.backup > /etc/pacman.d/mirrorlist
-		info_ok "Refreshing mirrorlist ... "; ok
+		info_ok "[+] Refreshing mirrorlist ... "; ok
 
-		info_white "Installing the base packages ... "
+		info_white "[+] Installing the base packages ... "
 		pacstrap /mnt base
-		info_ok "Installing the base packages ... "; ok
+		info_ok "[+] Installing the base packages ... "; ok
 		
 
 
-		warning "change root directory before continue !!!"
+		warning "\nchange root directory before continue !!!\n"
 		cp $0 /mnt/
 		info_white "command: arch-chroot /mnt"
-		info_white "run $0 again and choose chrooted env"
+		info_white "run $0 again and choose chrooted env\n"
 
 		exit		
 
@@ -215,14 +269,15 @@ if echo "$answer" | grep -iq "^y" ;then
 	fi
 
 
-	info_green "Step 2 (Chrooted Environment) (y/n)? "
-	read answer2
-	if echo "$answer2" | grep -iq "^y" ;then
+	
+	if echo "$answer1" | grep -iq "^2" ;then
+
+		info_green "===== Step 2 (Chrooted Environment)=====\n"
 
 		######################### BEGIN - CHROOTED ENV CONFIGURATION ######################################
 
 		# setup time zone
-		ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime
+		ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime 
 		hwclock --systohc
 
 		# setup locale
@@ -240,15 +295,15 @@ if echo "$answer" | grep -iq "^y" ;then
 
 		# add keyboard keymap lvm2 encrypt HOOKS to mkinitcpio.conf 
 		sed -i "s/HOOKS=.*/HOOKS=\"base udev autodetect keyboard keymap modconf block lvm2 encrypt filesystems fsck\"/g" /etc/mkinitcpio.conf
-		info_white "Creating initramfs ..."
+		info_white "[+] Creating initramfs ..."
 		mkinitcpio -p linux
-		info_ok "Creating initramfs ... "; ok
+		info_ok "[+]Creating initramfs ... "; ok
 
 
-		info_white "Installing additional software ... "
+		info_white "[+] Installing additional software ... "
 		pacman -S $add_packages
 
-		info_white "Configuring the boot loader (LUKS) ... "
+		info_white "[+] Configuring the boot loader (LUKS) ... "
 		# GRUB_CMDLINE_LINUX="cryptdevice=/dev/sdb2:lvmpool root=/dev/mapper/lvmpool-root"
 		# GRUB_CMDLINE_LINUX="cryptdevice=/dev/sdb2:MyVol root=/dev/mapper/MyVol-lvroot"
 		# GRUB_CMDLINE_LINUX="cryptdevice=/dev/sda2:main root=/dev/mapper/main-root"
@@ -260,21 +315,43 @@ if echo "$answer" | grep -iq "^y" ;then
 
 		grub-mkconfig -o /boot/grub/grub.cfg
 		grub-install --target=i386-pc $dev
-		info_ok "Configuring the boot loader (LUKS) ... "; ok
+		info_ok "[+] Configuring the boot loader (LUKS) ... "; ok
 
 
-		info_white "Changing root password ... "
+		info_white "[+] Changing root password ... "
 		passwd
-		info_ok "Changing root password ... "; ok
+		info_ok "[+] Changing root password ... "; ok
 
-		info_ok "Adding user $user ... "
+		info_ok "[+] Adding user $user ... "
 		useradd -m -G wheel -s /bin/zsh $user
 		ok
 
-		info_white "Changing $user password ... "
+		info_white "[+] Changing $user password ... "
 		passwd $user
-		info_ok "Changing $user password ... "; ok
+		info_ok "[+] Changing $user password ... "; ok
 		
+
+		# Blackarch installation
+		info_green "Would you like to install blackarch (y/n)? "
+
+		read answer
+		if echo "$answer" | grep -iq "^y" ;then
+			curl -O https://blackarch.org/strap.sh
+			info_white "SHA1 Finderpring (from website)"
+			curl https://blackarch.org/downloads.html -s  | grep 'The SHA1 sum should match:'
+			info_white "SHA1 Finderpring (local file)"
+			sha1sum strap.sh
+			chmod +x strap.sh
+
+			info_green "Are both SHA1 values the same? (y/n)"
+
+			read answer
+			if echo "$answer" | grep -iq "^y" ;then
+				./strap.sh
+				rm ./strap.sh
+			fi
+		fi
+
 
 		info_green "Please finish the following steps"
 		info_white "\t 1) Remove install scripts : rm $0"
@@ -285,5 +362,5 @@ if echo "$answer" | grep -iq "^y" ;then
 	fi
 
 else
-    echo "Installation canceled"
+    warning "[-] Installation canceled"
 fi
