@@ -13,7 +13,7 @@ lvm_partition="/dev/sda2"
 root_size=65 # GB
 swap_size=12 # GB
 hostname=myhost
-add_packages="grub efibootmgr sudo vim bash-completion zsh wget git dhclient net-tools"
+add_packages="grub efibootmgr lvm2 sudo vim bash-completion zsh wget git dhclient net-tools"
 user="newuser"
 
 # ====== colors ========
