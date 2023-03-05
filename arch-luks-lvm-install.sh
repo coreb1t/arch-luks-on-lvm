@@ -3,10 +3,10 @@
 # Arch Linux installation script with full drive automatic partitioning full luks on LVM encryption 
 # 
 # Author: coreb1t
-# Version: 0.2.1
+# Version: 0.3.0
 
 # How to convert to MBR
-https://superuser.com/questions/1250895/converting-between-gpt-and-mbr-hard-drive-without-losing-data
+# https://superuser.com/questions/1250895/converting-between-gpt-and-mbr-hard-drive-without-losing-data
 
 # ===== configuration =====
 dev="/dev/sda"
