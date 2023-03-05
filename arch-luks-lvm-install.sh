@@ -247,11 +247,11 @@ if echo "$answer" | grep -iq "^y" ;then
 		ok
 
 
-		info_white "[+] Refreshing mirrorlist ... "
-		echo "you can cancel the process if it takes to long. 6 fastest mirrors will be writted to /etc/pacman.d/mirrorlist (ctrl + C)"
-		cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
-		rankmirrors -n 6 /etc/pacman.d/mirrorlist.backup > /etc/pacman.d/mirrorlist
-		info_ok "[+] Refreshing mirrorlist ... "; ok
+		# info_white "[+] Refreshing mirrorlist ... "
+		# echo "you can cancel the process if it takes to long. 6 fastest mirrors will be writted to /etc/pacman.d/mirrorlist (ctrl + C)"
+		# cp /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.backup
+		# rankmirrors -n 6 /etc/pacman.d/mirrorlist.backup > /etc/pacman.d/mirrorlist
+		# info_ok "[+] Refreshing mirrorlist ... "; ok
 
 		info_white "[+] Installing the base packages ... "
 		pacstrap -K /mnt base linux linux-firmware
