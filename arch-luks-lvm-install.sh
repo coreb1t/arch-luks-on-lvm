@@ -91,7 +91,7 @@ if echo "$answer" | grep -iq "^y" ;then
 		######################### BEGIN - in LIVE ARCH LINUX CONFIGURATION ######################################
 
 		info_white "[+] Installing additional software ... "
-		pacman -S $add_packages
+		pacman -Sy $add_packages
 
 		# setup wifi
 		# ping -q -w 1 -c 1 archlinux.org > /dev/null && info_white "internet connection: ok" || warning "internet connection: not connected"; wifi-menu
@@ -303,7 +303,7 @@ if echo "$answer" | grep -iq "^y" ;then
 
 
 		info_white "[+] Installing additional software ... "
-		pacman -S $add_packages
+		pacman -Sy $add_packages
 
 		info_white "[+] Configuring the boot loader (LUKS) ... "
 		# GRUB_CMDLINE_LINUX="cryptdevice=/dev/sdb2:lvmpool root=/dev/mapper/lvmpool-root"
