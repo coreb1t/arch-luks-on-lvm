@@ -13,7 +13,7 @@ lvm_partition="/dev/sda2"
 root_size=65 # GB
 swap_size=12 # GB
 hostname=myhost
-add_packages="grub efibootmgr lvm2 sudo vim bash-completion zsh wget git dhclient net-tools"
+add_packages="grub efibootmgr lvm2 sudo vim bash-completion zsh wget git dhclient net-tools rankmirrors"
 user="newuser"
 
 # ====== colors ========
@@ -90,6 +90,8 @@ if echo "$answer" | grep -iq "^y" ;then
 
 		######################### BEGIN - in LIVE ARCH LINUX CONFIGURATION ######################################
 
+		info_white "[+] Installing additional software ... "
+		pacman -S $add_packages
 
 		# setup wifi
 		# ping -q -w 1 -c 1 archlinux.org > /dev/null && info_white "internet connection: ok" || warning "internet connection: not connected"; wifi-menu
