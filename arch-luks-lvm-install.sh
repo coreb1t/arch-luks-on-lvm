@@ -97,7 +97,7 @@ if echo "$answer" | grep -iq "^y" ;then
 		info_white "[+] Checking internet connection ... "
 		info_white "(if required use wifi-menu command to setup Wi-Fi)\n"
 		info_white "\tCurrent IP: "
-		ifconfig | grep 255.255 # show current ip
+		ip link # show current ip
 
 		info_white "\n\tPress any key to continue" 
 		read input
