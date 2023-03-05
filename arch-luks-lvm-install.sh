@@ -314,8 +314,8 @@ if echo "$answer" | grep -iq "^y" ;then
 		echo "GRUB_ENABLE_CRYPTODISK=y" >> /etc/default/grub
 		echo 'GRUB_PRELOAD_MODULES="lvm luks cryptodisk"' >> /etc/default/grub
 
-		grub-mkconfig -o /boot/grub/grub.cfg
 		grub-install --target=i386-pc $dev
+		grub-mkconfig -o /boot/grub/grub.cfg
 		info_ok "[+] Configuring the boot loader (LUKS) ... "; ok
 
 
