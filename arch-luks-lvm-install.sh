@@ -292,15 +292,14 @@ if echo "$answer" | grep -iq "^y" ;then
 		echo "127.0.1.1	$hostname.localdomain	$hostname"  >> /etc/hosts
 		info_ok "Setup time zone, locale, vconsole, hostname ... "; ok
 
+		info_white "[+] Installing additional software ... "
+		pacman -Sy $add_packages
+
 		# add keyboard keymap lvm2 encrypt HOOKS to mkinitcpio.conf 
 		sed -i "s/HOOKS=.*/HOOKS=\"base udev autodetect keyboard keymap modconf block lvm2 encrypt filesystems fsck\"/g" /etc/mkinitcpio.conf
 		info_white "[+] Creating initramfs ..."
 		mkinitcpio -p linux
 		info_ok "[+]Creating initramfs ... "; ok
-
-
-		info_white "[+] Installing additional software ... "
-		pacman -Sy $add_packages
 
 		info_white "[+] Configuring the boot loader (LUKS) ... "
 		# GRUB_CMDLINE_LINUX="cryptdevice=/dev/sdb2:lvmpool root=/dev/mapper/lvmpool-root"
