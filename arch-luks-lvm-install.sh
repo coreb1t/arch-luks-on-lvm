@@ -117,8 +117,8 @@ if echo "$answer" | grep -iq "^y" ;then
 		cfdisk $dev
 
 		# print partitioning info
-		sda1_size=$(fdisk -l /dev/sda | grep $boot_partition | awk -F ' ' '{print $6}') # because of bootable flag
-		sda2_size=$(fdisk -l /dev/sda | grep $lvm_partition | awk -F ' ' '{print $5}')
+		sda1_size=$(fdisk -l $dev | grep $boot_partition | awk -F ' ' '{print $6}') # because of bootable flag
+		sda2_size=$(fdisk -l $dev | grep $lvm_partition | awk -F ' ' '{print $5}')
 		warning "\nPlease edit the configuration before continue (ir required) !!!"
 		info_green "\n--- configuration ---"
 		info_white "device: \t$dev"
