@@ -252,7 +252,7 @@ if echo "$answer" | grep -iq "^y" ;then
 		info_ok "[+] Refreshing mirrorlist ... "; ok
 
 		info_white "[+] Installing the base packages ... "
-		pacstrap /mnt base
+		pacstrap -K /mnt base linux linux-firmware
 		info_ok "[+] Installing the base packages ... "; ok
 		
 
