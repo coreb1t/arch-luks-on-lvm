@@ -108,7 +108,7 @@ if echo "$answer" | grep -iq "^y" ;then
 
 		info_white "\nPlease create 2 partitions on the harddrive $dev" 
 		# cfdisk /dev/sda
-		info_green "\t boot partition [type 83] ($boot_partition) at least 1024MB (set as bootable)" 
+		info_green "\t boot partition [type 83] ($boot_partition) at least 1024MB (set as Linux filesystem and bootable)" 
 		info_green "\t lvm  partition [type 8e] ($lvm_partition) use 100% from free space (set type as linux LVM) \n"
 		
 		info_white "\tPress any key to continue" 
