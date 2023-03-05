@@ -258,6 +258,7 @@ if echo "$answer" | grep -iq "^y" ;then
 
 		warning "\nchange root directory before continue !!!\n"
 		cp $0 /mnt/
+		info_white "coping installation script $o to /mnt"
 		info_white "command: arch-chroot /mnt"
 		info_white "run $0 again and choose chrooted env\n"
 
