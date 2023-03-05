@@ -234,7 +234,7 @@ if echo "$answer" | grep -iq "^y" ;then
 		fstab="/mnt/etc/fstab"
 		touch $fstab
 		echo '/dev/mapper/root        /       ext4            defaults        0       1' >> $fstab
-		echo '/dev/sda1               /boot   ext4            defaults        0       2' >> $fstab
+		echo "$boot_partition              /boot   ext4            defaults        0       2" >> $fstab
 		echo '/dev/mapper/swap        none    swap            sw              0       0' >> $fstab
 		echo '/dev/mapper/home        /home   ext4            defaults        0       2' >> $fstab
 
